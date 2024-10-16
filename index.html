@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVANT</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .file-tree {
+            padding: 20px;
+        }
+        .folder, .file {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .folder:hover, .file:hover {
+            background-color: #f0f0f0;
+        }
+        .folder-icon, .file-icon {
+            margin-right: 10px;
+            color: #007aff;
+        }
+        .folder-name, .file-name {
+            flex-grow: 1;
+        }
+        .file-info {
+            font-size: 0.8em;
+            color: #888;
+        }
+        #media-player {
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        audio, img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        .download-button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AVANT</h1>
+        </div>
+        <div class="file-tree" id="file-tree"></div>
+        <div id="media-player"></div>
+    </div>
+
+    <script>
+        const files = {
+            '2019': [
+                { name: 'Track 2019.mp3', type: 'audio', size: '5.2 MB', date: '2019-05-15', url: 'analog4.mp3' },
+                { name: 'Image 2019.jpg', type: 'image', size: '2.1 MB', date: '2019-08-22', url: '/api/placeholder/400/320' }
+            ],
+            '2020': [
+                { name: 'Track 2020.mp3', type: 'audio', size: '4.8 MB', date: '2020-03-10', url: '/api/placeholder/400/320' },
+                { name: 'Image 2020.png', type: 'image', size: '1.7 MB', date: '2020-11-05', url: '/api/placeholder/400/320' }
+            ],
+            '2021': [
+                { name: 'Track 2021.mp3', type: 'audio', size: '6.1 MB', date: '2021-07-18', url: '/api/placeholder/400/320' },
+                { name: 'Image 2021.jpg', type: 'image', size: '3.2 MB', date: '2021-12-01', url: '/api/placeholder/400/320' }
+            ],
+            '2022': [
+                { name: 'Track 2022.mp3', type: 'audio', size: '5.5 MB', date: '2022-02-28', url: '/api/placeholder/400/320' },
+                { name: 'Image 2022.png', type: 'image', size: '2.3 MB', date: '2022-09-14', url: '/api/placeholder/400/320' }
+            ],
+            '2023': [
+                { name: 'Track 2023.mp3', type: 'audio', size: '4.9 MB', date: '2023-06-07', url: '/api/placeholder/400/320' },
+                { name: 'Image 2023.jpg', type: 'image', size: '1.9 MB', date: '2023-10-30', url: '/api/placeholder/400/320' }
+            ],
+            '2024': [
+                { name: 'Track 2024.mp3', type: 'audio', size: '5.7 MB', date: '2024-01-22', url: '/api/placeholder/400/320' },
+                { name: 'Image 2024.png', type: 'image', size: '2.5 MB', date: '2024-04-03', url: '/api/placeholder/400/320' }
+            ]
+        };
+
+        const fileTree = document.getElementById('file-tree');
+        const mediaPlayer = document.getElementById('media-player');
+
+        function renderFiles() {
+            for (const [year, yearFiles] of Object.entries(files)) {
+                const folderElement = document.createElement('div');
+                folderElement.className = 'folder';
+                folderElement.innerHTML = `
+                    <span class="folder-icon"><i class="fas fa-folder"></i></span>
+                    <span class="folder-name">${year}</span>
+                `;
+                folderElement.addEventListener('click', () => toggleFolder(folderElement));
+                fileTree.appendChild(folderElement);
+
+                const filesContainer = document.createElement('div');
+                filesContainer.style.display = 'none';
+                filesContainer.style.paddingLeft = '20px';
+
+                yearFiles.forEach(file => {
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'file';
+                    fileElement.innerHTML = `
+                        <span class="file-icon"><i class="fas fa-${file.type === 'audio' ? 'music' : 'image'}"></i></span>
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-info">${file.size} | ${file.date}</span>
+                        <button class="download-button" onclick="downloadFile('${file.url}', '${file.name}')">Download</button>
+                    `;
+                    fileElement.addEventListener('click', () => playMedia(file));
+                    filesContainer.appendChild(fileElement);
+                });
+
+                fileTree.appendChild(filesContainer);
+            }
+        }
+
+        function toggleFolder(folderElement) {
+            const filesContainer = folderElement.nextElementSibling;
+            filesContainer.style.display = filesContainer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function playMedia(file) {
+            mediaPlayer.innerHTML = '';
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close-button';
+            closeButton.innerHTML = '&times;';
+            closeButton.onclick = () => mediaPlayer.innerHTML = '';
+
+            if (file.type === 'audio') {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = file.url;
+                mediaPlayer.appendChild(audio);
+            } else if (file.type === 'image') {
+                const img = document.createElement('img');
+                img.src = file.url;
+                img.alt = file.name;
+                mediaPlayer.appendChild(img);
+            }
+            mediaPlayer.appendChild(closeButton);
+        }
+
+        function downloadFile(url, fileName) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        renderFiles();
+    </script>
+</body>
+</html>
